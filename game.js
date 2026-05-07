@@ -358,12 +358,11 @@ window.addEventListener('keyup', (e) => {
 // --- pointer / touch gesture recognizer ---
 //
 // Tap halves rotate, horizontal drag = direct move (1 cell per CELL px of
-// finger travel, DAS bypassed), downward drag = soft drop held, two-finger
-// tap = hold. Hard drop is the dedicated on-screen button — gesture-based
-// hard drop is unreliable on a phone.
+// finger travel, DAS bypassed), two-finger tap = hold. Soft drop and hard
+// drop are dedicated buttons — vertical drag was too easy to fire by
+// accident while doing horizontal moves.
 const TAP_TIME_MS = 220;
 const TAP_THRESH_PX = 10;
-const SOFT_DROP_THRESH_CELLS = 0.6;
 
 const pointers = new Map();   // pointerId -> tracker
 
@@ -384,11 +383,10 @@ function trackerFor(surface) {
     pointers.set(e.pointerId, {
       startX: e.clientX, startY: e.clientY,
       lastX: e.clientX, lastY: e.clientY,
-      dxAccumCells: 0, dyAccumCells: 0,
+      dxAccumCells: 0,
       startT: performance.now(),
       lastT: performance.now(),
       moved: false,
-      softDropActive: false,
     });
     // two-finger: hold
     if (pointers.size === 2) {
@@ -400,11 +398,8 @@ function trackerFor(surface) {
   const onMove = (e) => {
     const p = pointers.get(e.pointerId);
     if (!p) return;
-    const now = performance.now();
     const dxScreen = e.clientX - p.lastX;
-    const dyScreen = e.clientY - p.lastY;
-    const dt = Math.max(1, now - p.lastT);
-    p.lastX = e.clientX; p.lastY = e.clientY; p.lastT = now;
+    p.lastX = e.clientX; p.lastY = e.clientY;
 
     const totalDx = e.clientX - p.startX;
     const totalDy = e.clientY - p.startY;
@@ -416,6 +411,8 @@ function trackerFor(surface) {
     if (cellPx <= 0) return;
 
     // --- horizontal drag: direct move, 1 cell per cellPx ---
+    // Vertical movement is intentionally ignored — it was too easy to fire
+    // soft drop by accident while making horizontal corrections.
     p.dxAccumCells += dxScreen / cellPx;
     while (p.dxAccumCells >= 1) {
       tryMove(+1, 0);
@@ -426,22 +423,6 @@ function trackerFor(surface) {
       p.dxAccumCells += 1;
     }
 
-    // --- vertical: any sustained downward drag engages soft drop ---
-    if (dyScreen > 0) {
-      p.dyAccumCells += dyScreen / cellPx;
-      if (!p.softDropActive && p.dyAccumCells > SOFT_DROP_THRESH_CELLS) {
-        actionDown('soft');
-        p.softDropActive = true;
-      }
-    } else if (dyScreen < 0) {
-      // user reversed direction — release soft drop and reset accumulator
-      if (p.softDropActive) {
-        actionUp('soft');
-        p.softDropActive = false;
-      }
-      p.dyAccumCells = 0;
-    }
-
     e.preventDefault();
   };
 
@@ -449,10 +430,7 @@ function trackerFor(surface) {
     const p = pointers.get(e.pointerId);
     if (!p) return;
     pointers.delete(e.pointerId);
-    if (p.softDropActive) actionUp('soft');
 
-    const totalDx = e.clientX - p.startX;
-    const totalDy = e.clientY - p.startY;
     const dt = performance.now() - p.startT;
 
     if (mode !== 'playing') return;
@@ -469,9 +447,6 @@ function trackerFor(surface) {
   };
 
   const onCancel = (e) => {
-    const p = pointers.get(e.pointerId);
-    if (!p) return;
-    if (p.softDropActive) actionUp('soft');
     pointers.delete(e.pointerId);
   };
 
