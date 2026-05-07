@@ -800,7 +800,7 @@ function updatePreviews() {
 
 function showOverlay(title, body, isWarn) {
   overlayEl.classList.remove('hidden');
-  overlayTitleEl.textContent = title;
+  overlayTitleEl.innerHTML = title;
   overlayTitleEl.className = isWarn ? 'warn' : '';
   overlayBodyEl.innerHTML = body;
   if (overlayHintEl) overlayHintEl.style.display = (mode === 'ready') ? 'grid' : 'none';
