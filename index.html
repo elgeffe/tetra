@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0a0a0e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tetra">
+<meta name="mobile-web-app-capable" content="yes">
+<title>TETRA</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+  <header id="hud-top">
+    <div class="hud-cell hud-hold">
+      <span class="hud-label">HOLD</span>
+      <canvas id="hold" class="preview-canvas" width="120" height="80"></canvas>
+    </div>
+    <div class="hud-cell hud-stats">
+      <div class="stat-row"><span class="stat-key">SCORE</span><span class="stat-val score" id="score">0</span></div>
+      <div class="stat-row"><span class="stat-key">LV</span><span class="stat-val" id="level">1</span></div>
+      <div class="stat-row"><span class="stat-key">LN</span><span class="stat-val" id="lines">0</span></div>
+    </div>
+    <div class="hud-cell hud-next">
+      <span class="hud-label">NEXT</span>
+      <div class="next-list" id="next-list">
+        <canvas class="preview-canvas next-canvas" width="120" height="60"></canvas>
+        <canvas class="preview-canvas next-canvas" width="120" height="60"></canvas>
+        <canvas class="preview-canvas next-canvas" width="120" height="60"></canvas>
+      </div>
+    </div>
+  </header>
+
+  <div id="board-wrap">
+    <div class="board-frame" id="board-frame">
+      <canvas id="board" width="320" height="640"></canvas>
+      <div class="overlay" id="overlay">
+        <h2 id="overlay-title">TETRA<span class="accent">.</span></h2>
+        <p id="overlay-body">TAP TO START</p>
+        <div class="hint" id="overlay-hint">
+          <span>tap halves · rotate</span>
+          <span>drag · move</span>
+          <span>swipe down · drop</span>
+          <span>hold down · soft</span>
+          <span>two-finger · hold</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer id="hud-bottom">
+    <button id="btn-pause" class="ctrl-btn" aria-label="Pause">II</button>
+    <span class="status" id="status">READY</span>
+    <button id="btn-reset" class="ctrl-btn" aria-label="Reset">↻</button>
+  </footer>
+</main>
+
+<script src="game.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
