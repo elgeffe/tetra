@@ -366,7 +366,6 @@ const HARD_DROP_VELOCITY = 1.2;     // cells per ms
 const SOFT_DROP_THRESH_CELLS = 0.8;
 
 const pointers = new Map();   // pointerId -> tracker
-let lastTouchCount = 0;
 
 function trackerFor(boardCanvas) {
   const onDown = (e) => {
