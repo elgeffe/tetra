@@ -132,6 +132,10 @@ body::before {
   align-items: center;
   min-height: 0;
   min-width: 0;
+  /* full-width gesture surface: tapping outside the playfield still rotates */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .board-frame {

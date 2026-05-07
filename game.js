@@ -367,7 +367,7 @@ const SOFT_DROP_THRESH_CELLS = 0.6;
 
 const pointers = new Map();   // pointerId -> tracker
 
-function trackerFor(boardCanvas) {
+function trackerFor(surface) {
   const onDown = (e) => {
     if (mode === 'ready' || mode === 'over') {
       // any tap starts/restarts
@@ -380,7 +380,7 @@ function trackerFor(boardCanvas) {
       hideOverlay();
       return;
     }
-    boardCanvas.setPointerCapture && boardCanvas.setPointerCapture(e.pointerId);
+    surface.setPointerCapture && surface.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId, {
       startX: e.clientX, startY: e.clientY,
       lastX: e.clientX, lastY: e.clientY,
@@ -457,11 +457,10 @@ function trackerFor(boardCanvas) {
 
     if (mode !== 'playing') return;
 
-    // --- tap: rotate ---
+    // --- tap: rotate (split on viewport center, not just the canvas) ---
     if (!p.moved && dt < TAP_TIME_MS) {
-      const rect = boardCanvas.getBoundingClientRect();
-      const localX = e.clientX - rect.left;
-      if (localX < rect.width / 2) {
+      const screenW = window.innerWidth || document.documentElement.clientWidth;
+      if (e.clientX < screenW / 2) {
         actionTap('rotccw');
       } else {
         actionTap('rotcw');
@@ -476,11 +475,11 @@ function trackerFor(boardCanvas) {
     pointers.delete(e.pointerId);
   };
 
-  boardCanvas.addEventListener('pointerdown', onDown, { passive: false });
-  boardCanvas.addEventListener('pointermove', onMove, { passive: false });
-  boardCanvas.addEventListener('pointerup', onUp);
-  boardCanvas.addEventListener('pointercancel', onCancel);
-  boardCanvas.addEventListener('lostpointercapture', onCancel);
+  surface.addEventListener('pointerdown', onDown, { passive: false });
+  surface.addEventListener('pointermove', onMove, { passive: false });
+  surface.addEventListener('pointerup', onUp);
+  surface.addEventListener('pointercancel', onCancel);
+  surface.addEventListener('lostpointercapture', onCancel);
 }
 
 // --- on-screen control buttons ---
@@ -876,12 +875,16 @@ function init() {
   for (let i = 1; i <= 7; i++) COLORS[i] = readColor(i);
   resizeBoard();
   bindButtons();
-  trackerFor(boardCanvas);
+  // Attach the gesture recognizer to the wider board-wrap region — taps
+  // anywhere outside the footer/header (incl. the empty space beside the
+  // playfield) rotate. Drag-to-move and soft-drop also work here.
+  trackerFor(document.getElementById('board-wrap'));
   showOverlay('TETRA<span class="accent">.</span>', 'TAP TO START', false);
   mode = 'ready';
   spawn(drawBag());
 
-  // overlay/global tap to start (for taps outside the canvas region)
+  // overlay tap: handle start / restart / resume; stop propagation so the
+  // gesture recognizer underneath doesn't also count this as a rotation tap.
   overlayEl.addEventListener('pointerdown', (e) => {
     if (mode === 'ready') {
       mode = 'playing';
@@ -894,6 +897,7 @@ function init() {
       hideOverlay();
     }
     e.preventDefault();
+    e.stopPropagation();
   });
 
   window.addEventListener('resize', resizeBoard);
