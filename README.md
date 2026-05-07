@@ -40,8 +40,16 @@ python3 -m http.server 8080
 ## Deploy
 
 `.github/workflows/pages.yml` deploys to GitHub Pages on push to `main` or
-`claude/github-pages-mobile-ux-IKNS7`. **One-time setup:** in repo settings →
-Pages → set "Build and deployment" source to **GitHub Actions**.
+`claude/github-pages-mobile-ux-IKNS7`.
+
+**One-time setup (required):** GitHub doesn't let `GITHUB_TOKEN` enable Pages
+on a repo where it's never been turned on, so before the first deploy can
+succeed:
+
+1. Go to **Settings → Pages** on the repo.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+3. Re-run the failing workflow (Actions tab → latest run → "Re-run all jobs"),
+   or push another commit.
 
 ## Files
 
