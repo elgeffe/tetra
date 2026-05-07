@@ -771,14 +771,12 @@ const overlayEl = document.getElementById('overlay');
 const overlayTitleEl = document.getElementById('overlay-title');
 const overlayBodyEl = document.getElementById('overlay-body');
 const overlayHintEl = document.getElementById('overlay-hint');
-const statusEl = document.getElementById('status');
 
 let lastHudScore = -1, lastHudLines = -1, lastHudLevel = -1;
 function updateHud() {
   if (score !== lastHudScore) { scoreEl.textContent = score.toLocaleString(); lastHudScore = score; }
   if (lines !== lastHudLines) { linesEl.textContent = lines; lastHudLines = lines; }
   if (level !== lastHudLevel) { levelEl.textContent = level; lastHudLevel = level; }
-  statusEl.textContent = mode.toUpperCase();
 }
 
 let lastHoldType = -1;

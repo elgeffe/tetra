@@ -1,5 +1,5 @@
 // Tetra service worker — precache app shell, network-fall-through for fonts.
-const VERSION = 'tetra-v3';
+const VERSION = 'tetra-v4';
 const CORE = [
   './',
   './index.html',
