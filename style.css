@@ -177,6 +177,10 @@ body::before {
   font-weight: 300;
   font-size: 32px;
   letter-spacing: 0.3em;
+  /* letter-spacing adds trailing space on the last char too, which
+     visually shifts the text left of true center. Pad-left to compensate. */
+  padding-left: 0.3em;
+  text-align: center;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -209,8 +213,9 @@ body::before {
 
 /* ============== FOOTER ============== */
 #hud-bottom {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 8px;
   align-items: center;
   border-top: 1px solid var(--line);
   padding-top: 6px;
@@ -220,27 +225,46 @@ body::before {
   text-transform: uppercase;
 }
 
-.status { font-variant-numeric: tabular-nums; color: var(--ink-dim); }
-
 .ctrl-btn {
   background: var(--panel);
   border: 1px solid var(--line);
   color: var(--ink);
   font-family: inherit;
-  font-size: 14px;
-  width: 40px;
-  height: 36px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  height: 44px;             /* iOS thumb-friendly minimum */
+  min-width: 48px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.08s, border-color 0.08s;
+  transition: background 0.06s, border-color 0.06s, color 0.06s;
 }
 .ctrl-btn:active {
   background: var(--panel-2);
   border-color: var(--accent);
+}
+
+/* Primary action — DROP — sized for thumb, accent-colored, eats remaining space */
+.ctrl-btn--primary {
+  background: var(--accent);
+  color: #1a1408;
+  border-color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  height: 52px;
+  width: 100%;
+}
+.ctrl-btn--primary:active {
+  background: #f8d674;
+  border-color: #f8d674;
+  color: #1a1408;
+  transform: translateY(1px);
 }
 
 /* ============== RESPONSIVE ============== */

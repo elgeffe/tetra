@@ -357,13 +357,13 @@ window.addEventListener('keyup', (e) => {
 
 // --- pointer / touch gesture recognizer ---
 //
-// Per architecture §6: tap halves rotate, horizontal drag = direct move
-// (1 cell per CELL px of finger travel, DAS bypassed), down-swipe = hard drop,
-// slow down-drag = soft drop held, two-finger tap = hold.
+// Tap halves rotate, horizontal drag = direct move (1 cell per CELL px of
+// finger travel, DAS bypassed), downward drag = soft drop held, two-finger
+// tap = hold. Hard drop is the dedicated on-screen button — gesture-based
+// hard drop is unreliable on a phone.
 const TAP_TIME_MS = 220;
 const TAP_THRESH_PX = 10;
-const HARD_DROP_VELOCITY = 1.2;     // cells per ms
-const SOFT_DROP_THRESH_CELLS = 0.8;
+const SOFT_DROP_THRESH_CELLS = 0.6;
 
 const pointers = new Map();   // pointerId -> tracker
 
@@ -389,7 +389,6 @@ function trackerFor(boardCanvas) {
       lastT: performance.now(),
       moved: false,
       softDropActive: false,
-      hardDropFired: false,
     });
     // two-finger: hold
     if (pointers.size === 2) {
@@ -427,25 +426,20 @@ function trackerFor(boardCanvas) {
       p.dxAccumCells += 1;
     }
 
-    // --- vertical: hard drop on fast down-swipe; soft drop on slow down-drag ---
+    // --- vertical: any sustained downward drag engages soft drop ---
     if (dyScreen > 0) {
-      const velCellsPerMs = (dyScreen / cellPx) / dt;
-      if (!p.hardDropFired && velCellsPerMs > HARD_DROP_VELOCITY && totalDy / cellPx > 2) {
-        hardDrop();
-        p.hardDropFired = true;
-        return;
-      }
       p.dyAccumCells += dyScreen / cellPx;
       if (!p.softDropActive && p.dyAccumCells > SOFT_DROP_THRESH_CELLS) {
         actionDown('soft');
         p.softDropActive = true;
       }
     } else if (dyScreen < 0) {
-      // user reversed direction — release soft drop
+      // user reversed direction — release soft drop and reset accumulator
       if (p.softDropActive) {
         actionUp('soft');
         p.softDropActive = false;
       }
+      p.dyAccumCells = 0;
     }
 
     e.preventDefault();
@@ -492,8 +486,18 @@ function trackerFor(boardCanvas) {
 // --- on-screen control buttons ---
 function bindButtons() {
   const pause = document.getElementById('btn-pause');
+  const hold  = document.getElementById('btn-hold');
+  const drop  = document.getElementById('btn-drop');
   const reset = document.getElementById('btn-reset');
+
   pause.addEventListener('click', () => actionTap('pause'));
+  hold.addEventListener('click', () => actionTap('hold'));
+  // pointerdown fires sooner than click — hard drop is timing-sensitive,
+  // and we don't want a synthetic click delay.
+  drop.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    actionTap('hard');
+  });
   reset.addEventListener('click', () => {
     if (confirm('Reset game?')) actionTap('reset');
   });
